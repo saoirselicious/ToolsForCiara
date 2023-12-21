@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Links</title>
+</head>
+<body>
+
+    <h1>Links to Editors</h1>
+
+    <div>
+        <button onclick="redirectToGenerateBlogPost()">Generate Blog Post</button>
+        <button onclick="redirectToJsonEditor()">JSON Editor</button>
+    </div>
+
+    <script>
+        function redirectToGenerateBlogPost() {
+            window.location.href = 'generateBlogPost/index.html';
+        }
+
+        function redirectToJsonEditor() {
+            window.location.href = 'jsonEditor/index.html';
+        }
+    </script>
+
+</body>
+</html>
