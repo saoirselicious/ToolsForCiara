@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Options</title>
+</head>
+<body>
+    <h1>Form Options</h1>
+    <form>
+        <label for="heading">Heading:</label>
+        <input type="text" id="heading" name="heading"><br><br>
+
+        <label for="subheading">Subheading:</label>
+        <input type="text" id="subheading" name="subheading"><br><br>
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date"><br><br>
+
+        <label for="backgroundImage">Background Image URL:</label>
+        <input type="file" id="backgroundImage" name="backgroundImage" accept="image/*"><br><br>
+
+        <label for="searchKey">Search Key:</label>
+        <input type="text" id="searchKey" name="searchKey"><br><br>
+
+        <label for="contentImages">Content Images:</label>
+        <input type="file" id="contentImages" name="contentImages" accept="image/*" multiple><br><br>
+
+        <label for="mainContent">mainContent</label>
+        <input type="text" id="mainContent"  name="mainContent" style="display: block; width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; resize: vertical;"><br><br>
+
+    </form>
+
+    <button id="createDocument">Create Text Document</button>
+<!--
+    ---
+    heading: "Man must explore, and this is exploration at its greatest"
+    subheading: "Problems look mighty small from 150 miles up"
+    layout: blogLayout.njk
+    date: 2016-01-01
+    backgroundImage: ../../images/post-bg.jpg
+    tags: bloging
+
+    eleventyNavigation:
+        key: A post about music
+        previewImage: ../../images/post-bg.jpg
+        parent: blog
+
+    ---
+-->
+
+    <script>
+document.getElementById('createDocument').addEventListener('click', function() {
+    // Content to be written in the text document
+    const headingText = `---\nheading: "${document.getElementById('heading').value}"\n`;
+    const subHeadingText = `subheading: "${document.getElementById('subheading').value}"\nlayout: blogLayout.njk\n`;
+    const dateInput = document.getElementById('date').value;
+    const dateObject = new Date(dateInput);
+    const year = dateObject.getFullYear();
+    const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(dateObject.getDate()).padStart(2, '0');
+    const formattedDate = `date: ${year}-${month}-${day}\n`;
+    const backgroundImage = `backgroundImage: ../../images/posts${document.getElementById('backgroundImage').files[0].name}\ntags: bloging\n\neleventyNavigation:\n\t`;
+    const searchKey = `key: ${document.getElementById('searchKey').value}\n\tpreviewImage: ../../images/posts${document.getElementById('backgroundImage').files[0].name}\n\tparent: blog\n\n---\n`;
+    const mainContent = `${document.getElementById('mainContent').value}\n`;
+
+    // Check for content images
+    const contentImagesInput = document.getElementById('contentImages');
+    const contentImages = [];
+    if (contentImagesInput.files.length > 0) {
+        for (const file of contentImagesInput.files) {
+            contentImages.push(file.name);
+        }
+    }
+
+    // Check if contentImages are present and update the text accordingly
+    const contentImagesText = contentImages.length > 0
+        ? `contentImages:\n${contentImages.map(image => `  - "../../images/posts/${image}"`).join('\n')}\n`
+        : '';
+
+    // Update the content variable
+    const content = `${headingText}${subHeadingText}${formattedDate}${contentImagesText}${backgroundImage}${searchKey}${mainContent}`;
+
+    // Create a Blob with the content
+    const blob = new Blob([content], { type: 'text/plain' });
+
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Create a link to download the text document
+    let link = document.createElement('a');
+    link.href = url;
+    link.download = document.getElementById('searchKey').value+'.md';
+    link.innerHTML = 'Download Text Document';
+    document.body.appendChild(link);
+});
+    </script>
+</body>
+</html>
+
+

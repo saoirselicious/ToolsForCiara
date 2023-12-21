@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced JSON Editor</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  #editor-container {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 20px;
+    padding: 20px;
+  }
+  #json-input {
+    width: 100%;
+  }
+  #dropdown-row {
+    display: flex;
+    gap: 20px;
+  }
+  #category-dropdown, #element-dropdown {
+    width: 150px;
+  }
+  #json-output {
+    width: 100%;
+    height: 7em;
+    border: 1px solid #ccc;
+    resize: none;
+  }
+  #button-row {
+    display: flex;
+    gap: 20px;
+  }
+</style>
+</head>
+<body>
+  <div id="editor-container">
+    <input type="file" id="json-input">
+    <div id="dropdown-row">
+      <select id="category-dropdown"></select>
+      <select id="element-dropdown"></select>
+    </div>
+    <textarea id="json-output" readonly></textarea>
+    <div id="button-row">
+      <button id="delete-element">Delete Element</button>
+      <button id="add-category">Add Category</button>
+      <button id="add-element">Add Element</button>
+      <button id="save-json">Save JSON</button>
+    </div>
+  </div>
+  <script>
+    const jsonInput = document.getElementById("json-input");
+    const categoryDropdown = document.getElementById("category-dropdown");
+    const elementDropdown = document.getElementById("element-dropdown");
+    const jsonOutput = document.getElementById("json-output");
+    const deleteElementBtn = document.getElementById("delete-element");
+    const addCategoryBtn = document.getElementById("add-category");
+    const addElementBtn = document.getElementById("add-element");
+    const saveJsonBtn = document.getElementById("save-json");
+
+    let jsonData = {};
+
+    jsonInput.addEventListener("change", handleFileInput);
+    categoryDropdown.addEventListener("change", populateElementDropdown);
+    elementDropdown.addEventListener("change", displaySelectedElement);
+    deleteElementBtn.addEventListener("click", deleteSelectedElement);
+    addCategoryBtn.addEventListener("click", addNewCategory);
+    addElementBtn.addEventListener("click", addNewElement);
+    saveJsonBtn.addEventListener("click", saveEditedJson);
+
+    function handleFileInput(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            jsonData = JSON.parse(e.target.result);
+            populateCategoryDropdown();
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    function populateCategoryDropdown() {
+      const categories = Object.keys(jsonData);
+      categoryDropdown.innerHTML = categories.map(category => `<option value="${category}">${category}</option>`).join("");
+      populateElementDropdown();
+    }
+
+    function populateElementDropdown() {
+      const selectedCategory = categoryDropdown.value;
+      if (selectedCategory) {
+        elementDropdown.innerHTML = jsonData[selectedCategory].map(element => `<option value="${element.Name}">${element.Name}</option>`).join("");
+      }
+    }
+
+    function displaySelectedElement() {
+      const selectedCategory = categoryDropdown.value;
+      const selectedElementName = elementDropdown.value;
+      if (selectedCategory && selectedElementName) {
+        const selectedElement = jsonData[selectedCategory].find(element => element.Name === selectedElementName);
+        jsonOutput.value = JSON.stringify(selectedElement, null, 2);
+      }
+    }
+
+    function deleteSelectedElement() {
+      const selectedCategory = categoryDropdown.value;
+      const selectedElementName = elementDropdown.value;
+      if (selectedCategory && selectedElementName) {
+        jsonData[selectedCategory] = jsonData[selectedCategory].filter(element => element.Name !== selectedElementName);
+        populateElementDropdown();
+        jsonOutput.value = "";
+      }
+    }
+
+    function addNewCategory() {
+      const categoryName = prompt("Enter a new category name:");
+      if (categoryName && !jsonData[categoryName]) {
+        jsonData[categoryName] = [];
+        populateCategoryDropdown();
+      }
+    }
+
+    function addNewElement() {
+      const selectedCategory = categoryDropdown.value;
+      if (selectedCategory) {
+        const elementName = prompt("Enter a new element name:");
+        if (elementName) {
+          const newElement = {
+            Name: elementName,
+            Length: "",
+            Cost: "",
+            Add_Text: ""
+          };
+          jsonData[selectedCategory].push(newElement);
+          populateElementDropdown();
+        }
+      }
+    }
+
+    function saveEditedJson() {
+      const fileName = jsonInput.files[0].name;
+      const jsonContent = JSON.stringify(jsonData, null, 2);
+      const blob = new Blob([jsonContent], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
